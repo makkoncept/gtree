@@ -112,3 +112,18 @@ class GitRepo:
             return len(authors)
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             return 0
+    
+    def filter_files_since_date(self, files: List[str], since_date: str) -> List[str]:
+        """Filter files that have commits since the given date"""
+        try:
+            result = subprocess.run(
+                ["git", "log", "--since", since_date, "--name-only", "--pretty=format:", "--"] + files,
+                cwd=self.repo_path,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            changed_files = set(line.strip() for line in result.stdout.split('\n') if line.strip())
+            return [f for f in files if f in changed_files]
+        except subprocess.CalledProcessError:
+            return files

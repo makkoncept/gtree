@@ -28,6 +28,11 @@ def create_parser() -> argparse.ArgumentParser:
         help="Show tree for specific branch"
     )
     
+    parser.add_argument(
+        "--since",
+        type=str,
+        help="Filter files with commits since given date (e.g., '2023-01-01')"
+    )
     
     parser.add_argument(
         "path",
@@ -53,7 +58,8 @@ def main():
     if not files:
         print("No tracked files found", file=sys.stderr)
         sys.exit(1)
-    print("hello world")
+    if args.since:
+        files = repo.filter_files_since_date(files, args.since)
     
     if not files:
         print("No files match the specified criteria", file=sys.stderr)
