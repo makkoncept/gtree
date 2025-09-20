@@ -3,6 +3,7 @@ Command-line interface for gtree
 """
 
 import argparse
+import json
 import sys
 
 from .git_repo import GitRepo
@@ -33,6 +34,14 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--ext", type=str, help="Show only files with given extension (e.g., 'py')"
     )
+
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output machine-readable JSON instead of text tree",
+    )
+
+    parser.add_argument("--no-color", action="store_true", help="Disable color output")
 
     parser.add_argument(
         "path",
@@ -71,9 +80,20 @@ def main():
 
     metadata = repo.get_file_metadata(files, args.contributors)
 
-    renderer = TreeRenderer(use_colors=not args.no_color)
-    tree_output = renderer.render_tree(files, metadata, args.contributors)
-    print(tree_output)
+    if args.json:
+        # JSON output
+        result = {
+            "files": [
+                {"path": file_path, **metadata.get(file_path, {})}
+                for file_path in files
+            ]
+        }
+        print(json.dumps(result, indent=2))
+    else:
+        # Tree output
+        renderer = TreeRenderer(use_colors=not args.no_color)
+        tree_output = renderer.render_tree(files, metadata, args.contributors)
+        print(tree_output)
 
 
 if __name__ == "__main__":
