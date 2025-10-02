@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 gtree - A Git-aware directory tree utility
 
