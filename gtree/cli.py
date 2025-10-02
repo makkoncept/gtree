@@ -50,6 +50,19 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to Git repository (default: current directory)",
     )
 
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Fast mode: skip commit date metadata (much faster for large repos)",
+    )
+
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=1000,
+        help="Maximum number of files to process with metadata (default: 1000)",
+    )
+
     return parser
 
 
@@ -78,7 +91,23 @@ def main():
         print("No files match the specified criteria", file=sys.stderr)
         sys.exit(1)
 
-    metadata = repo.get_file_metadata(files, args.contributors)
+    # Get file metadata
+    if args.fast:
+        # Fast mode: skip metadata entirely
+        metadata = {file: {} for file in files}
+    elif len(files) > args.limit:
+        # Auto-fast mode for large repos
+        print(
+            f"Warning: {len(files)} files found. Using fast mode (no metadata) for performance.",
+            file=sys.stderr,
+        )
+        print(
+            "Use --limit to increase threshold or --fast to suppress this warning.",
+            file=sys.stderr,
+        )
+        metadata = {file: {} for file in files}
+    else:
+        metadata = repo.get_file_metadata(files, args.contributors)
 
     if args.json:
         # JSON output
