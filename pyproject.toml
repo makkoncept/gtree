@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gtree"
+dynamic = ["version"]
+description = "A Git-aware directory tree utility."
+requires-python = ">=3.7"
+dependencies = []
+authors = [
+    {name = "Mayank Nader", email = "mayank.nader11@gmail.com"}
+]
+readme = "README.md"
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+]
+
+[project.scripts]
+gtree = "gtree.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "gtree.__version__"}
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
