@@ -15,26 +15,22 @@ class TreeRenderer:
     def __init__(self, use_colors: bool = True):
         self.use_colors = use_colors
 
-    def get_recency_color(self, date_str: str) -> str:
+    def get_recency_color(self, commit_date: datetime) -> str:
         """Get color based on commit recency"""
-        if not self.use_colors or date_str == "unknown":
+        if not self.use_colors:
             return ""
 
-        try:
-            commit_date = datetime.strptime(date_str, "%Y-%m-%d")
-            now = datetime.now()
-            days_ago = (now - commit_date).days
+        now = datetime.now()
+        days_ago = (now - commit_date).days
 
-            if days_ago <= 7:
-                return Colors.RED
-            elif days_ago <= 30:
-                return Colors.ORANGE
-            elif days_ago <= 90:
-                return Colors.YELLOW
-            else:
-                return Colors.GREEN
-        except ValueError:
-            return ""
+        if days_ago <= 7:
+            return Colors.RED
+        elif days_ago <= 30:
+            return Colors.ORANGE
+        elif days_ago <= 90:
+            return Colors.YELLOW
+        else:
+            return Colors.GREEN
 
     def build_tree_structure(self, files: List[str]) -> Dict:
         """Build nested tree structure from file list"""
@@ -77,10 +73,14 @@ class TreeRenderer:
                 # Build file info
                 info_parts = []
                 if "last_commit" in file_meta:
-                    date_str = file_meta["last_commit"]
-                    color = self.get_recency_color(date_str)
-                    reset = Colors.RESET if color else ""
-                    info_parts.append(f"{color}[{date_str}]{reset}")
+                    try:
+                        commit_date = datetime.strptime(file_meta["last_commit"], "%Y-%m-%d")
+                        color = self.get_recency_color(commit_date)
+                        reset = Colors.RESET if color else ""
+                        symbol = "●"
+                        info_parts.append(f"{color}{symbol}{reset}")
+                    except (ValueError, KeyError):
+                        pass
 
                 if include_contributors and "contributors" in file_meta:
                     count = file_meta["contributors"]
